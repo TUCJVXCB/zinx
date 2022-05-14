@@ -1,9 +1,9 @@
 package znet
 
 import (
-	"errors"
 	"fmt"
 	"net"
+	"zinx/utils"
 	"zinx/ziface"
 )
 
@@ -21,6 +21,11 @@ type Server struct {
 
 func (s *Server) Start() {
 	fmt.Printf("[start] Server Listener at IP: %s, Port: %d, is starting\n", s.IP, s.Port)
+
+	fmt.Printf("[Zinx] Version: %s, MaxConn: %d,  MaxPacketSize: %d\n",
+		utils.GlobalObject.Version,
+		utils.GlobalObject.MaxConn,
+		utils.GlobalObject.MaxPacketSize)
 
 	go func() {
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
@@ -55,15 +60,6 @@ func (s *Server) Start() {
 	}()
 }
 
-func CallBackToClient(conn *net.TCPConn, bytes []byte, i int) error {
-	fmt.Println("[Conn Handle] CallbackToClient...")
-	if _, err := conn.Write(bytes); err != nil {
-		fmt.Println("write back buf err", err)
-		return errors.New("CallbackToClient error")
-	}
-	return nil
-}
-
 func (s *Server) Stop() {
 
 }
@@ -73,11 +69,13 @@ func (s *Server) Serve() {
 	select {}
 }
 
-func NewServe(name string) *Server {
+func NewServer(name string) *Server {
+	utils.GlobalObject.Reload()
+
 	s := &Server{
-		Name:      name,
-		IP:        "0.0.0.0",
-		Port:      8080,
+		Name:      utils.GlobalObject.Name,
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
 		IPVersion: "tcp4",
 		Router:    nil,
 	}
